@@ -192,7 +192,7 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       TextButton(
                         onPressed: () {
-                          // TODO: Implementasi navigasi ke halaman reset password
+                          context.go('/reset-password');
                         },
                         child: const Text(
                           'Forgot Password?',
