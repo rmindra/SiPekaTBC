@@ -22,6 +22,10 @@ GoRouter createRouter(String initialRoute) {
         path: '/dashboard',
         builder: (context,state) => const HomePage(),
       ),
+      GoRoute(
+        path: '/profile',
+        builder: (context,state) => const HomePage(),
+      ),
     ],
   );
 }
