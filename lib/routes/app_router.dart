@@ -3,6 +3,8 @@ import 'package:sipekatbc/features/auth/presentation/pages/onboarding_page.dart'
 import 'package:sipekatbc/features/auth/presentation/pages/login_page.dart';
 import 'package:sipekatbc/features/auth/presentation/pages/register_page.dart';
 
+import '../features/home/presentation/pages/home_page.dart';
+
 GoRouter createRouter(String initialRoute) {
   return GoRouter(
     initialLocation: initialRoute,
@@ -15,6 +17,10 @@ GoRouter createRouter(String initialRoute) {
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterPage(),
+      ),
+      GoRoute(
+        path: '/dashboard',
+        builder: (context,state) => const HomePage(),
       ),
     ],
   );

@@ -213,6 +213,7 @@ class _LoginPageState extends State<LoginPage> {
                     height: 50,
                     child: ElevatedButton(
                       onPressed: () {
+                        context.go('/dashboard');
                         // TODO: Implementasi logika login dengan Supabase / Riverpod
                       },
                       style: ElevatedButton.styleFrom(
