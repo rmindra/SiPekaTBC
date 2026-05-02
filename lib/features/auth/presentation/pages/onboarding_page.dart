@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sipekatbc/core/constants/app_colors.dart';
 
 class OnboardingPage extends StatelessWidget {
@@ -104,7 +106,9 @@ class OnboardingPage extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        completeOnboarding(context);
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryGreen,
                         foregroundColor: Colors.white,
@@ -141,4 +145,13 @@ class OnboardingPage extends StatelessWidget {
       ),
     );
   }
+}
+
+void completeOnboarding(BuildContext context) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setBool('onboarding_done', true);
+
+  if (!context.mounted) return;
+
+  context.go('/login');
 }
