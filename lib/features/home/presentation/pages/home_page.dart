@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sipekatbc/core/constants/app_colors.dart';
 
 class HomePage extends StatelessWidget {
@@ -27,7 +28,7 @@ class HomePage extends StatelessWidget {
       ),
       floatingActionButton: _buildCenterFAB(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: _buildBottomNav(),
+      bottomNavigationBar: _buildBottomNav(context),
     );
   }
 
@@ -371,7 +372,7 @@ class HomePage extends StatelessWidget {
   }
 
   // --- BOTTOM NAVIGATION BAR ---
-  Widget _buildBottomNav() {
+  Widget _buildBottomNav(BuildContext context) {
     return BottomAppBar(
       shape: const CircularNotchedRectangle(),
       notchMargin: 8.0,
@@ -385,17 +386,18 @@ class HomePage extends StatelessWidget {
             _buildNavItem(Icons.home, 'Home', true),
             _buildNavItem(Icons.map_outlined, 'Maps', false),
 
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: const [
-                SizedBox(height: 28),
-                Text('Chatbot', style: TextStyle(fontSize: 10, color: AppColors.grayIcon)),
-              ],
-            ),
+            // Spacing untuk Chatbot di tengah
+            const SizedBox(width: 40),
 
             _buildNavItem(Icons.menu_book_outlined, 'Education', false),
-            _buildNavItem(Icons.person_outline, 'Profile', false),
+
+            // --- UBAH BAGIAN INI ---
+            InkWell(
+              onTap: () {
+                context.go('/profile'); // Perintah untuk pindah ke halaman profile
+              },
+              child: _buildNavItem(Icons.person_outline, 'Profile', false),
+            ),
           ],
         ),
       ),
