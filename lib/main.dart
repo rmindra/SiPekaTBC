@@ -1,15 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:sipekatbc/service/supabase_client.dart';
+import 'package:sipekatbc/routes/app_router.dart';
+import 'core/utils/app_startup.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: SupabaseConfig.url,
+    anonKey: SupabaseConfig.anonKey,
+  );
+
+  final initialRoute = await AppStartup.getInitialRoute();
+
+  runApp(MyApp(initialRoute: initialRoute));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final String initialRoute;
 
-  // This widget is the root of your application.
+  const MyApp({super.key, required this.initialRoute});
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(title: 'Flutter Demo');
+    return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
+      routerConfig: createRouter(initialRoute),
+    );
   }
 }
