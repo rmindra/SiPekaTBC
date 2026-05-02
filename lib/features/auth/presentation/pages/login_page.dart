@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sipekatbc/core/constants/app_colors.dart';
 
 class LoginPage extends StatefulWidget {
@@ -30,7 +31,7 @@ class _LoginPageState extends State<LoginPage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // --- 1. Header Section dengan Stack (Background Teal & Logo Overlap) ---
+            // --- Header Section dengan Stack (Background Teal & Logo Overlap) ---
             SizedBox(
               height: 240,
               child: Stack(
@@ -71,7 +72,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
 
             SizedBox(height: 16),
-            // --- 2. Title Section ---
+            // --- Title Section ---
             const Text(
               'SiPekaTBC',
               style: TextStyle(
@@ -88,7 +89,7 @@ class _LoginPageState extends State<LoginPage> {
 
             const SizedBox(height: 64),
 
-            // --- 4. Form Section ---
+            // --- Form Section ---
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Column(
@@ -183,7 +184,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
 
-                  SizedBox(height: 8),
+                  SizedBox(height: 16),
 
                   // Forgot Password Button
                   Row(
@@ -191,8 +192,7 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       TextButton(
                         onPressed: () {
-                          // Navigasi ke halaman reset password menggunakan go_router
-                          // context.push('/reset-password');
+                          // TODO: Implementasi navigasi ke halaman reset password
                         },
                         child: const Text(
                           'Forgot Password?',
@@ -245,7 +245,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       TextButton(
                         onPressed: () {
-                          // Navigasi ke halaman register sesuai dengan go_router
+                          context.go('/register');
                         },
                         child: Text(
                           'Register',
