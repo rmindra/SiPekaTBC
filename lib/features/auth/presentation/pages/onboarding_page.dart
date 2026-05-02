@@ -149,7 +149,7 @@ class OnboardingPage extends StatelessWidget {
 
 void completeOnboarding(BuildContext context) async {
   final prefs = await SharedPreferences.getInstance();
-  await prefs.setBool('onboarding_done', true);
+  await prefs.setBool('onboarding_completed', true);
 
   if (!context.mounted) return;
 
