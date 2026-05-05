@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sipekatbc/core/constants/app_colors.dart';
+import 'package:sipekatbc/features/auth/presentation/controllers/auth_controller.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -16,6 +17,55 @@ class _LoginPageState extends State<LoginPage> {
   // Controllers untuk input forms
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+
+  bool isLoading = false;
+  final controller = AuthController();
+
+  String? error;
+  String? emailError;
+  String? passwordError;
+
+  bool _validateForm() {
+    final emailText = _emailController.text.trim();
+    final passwordText = _passwordController.text;
+
+    String? newEmailError;
+    String? newPasswordError;
+
+    newEmailError = controller.validateEmail(emailText);
+
+    newPasswordError = controller.validatePassword(passwordText);
+
+    setState(() {
+      emailError = newEmailError;
+      passwordError = newPasswordError;
+    });
+
+    return newEmailError == null && newPasswordError == null;
+  }
+
+  void handleLogin(BuildContext context) async {
+    if (!_validateForm()) {
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    final result = await controller.login(
+      _emailController.text,
+      _passwordController.text,
+    );
+
+    if (!context.mounted) return;
+
+    setState(() => isLoading = false);
+
+    if (result != null) {
+      setState(() => error = result);
+    } else {
+      context.go('/dashboard');
+    }
+  }
 
   @override
   void dispose() {
@@ -131,6 +181,14 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
+                  if (emailError != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text(
+                        emailError!,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ),
 
                   const SizedBox(height: 16),
 
@@ -183,6 +241,14 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
+                  if (passwordError != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text(
+                        passwordError!,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ),
 
                   SizedBox(height: 16),
 
@@ -213,8 +279,7 @@ class _LoginPageState extends State<LoginPage> {
                     height: 50,
                     child: ElevatedButton(
                       onPressed: () {
-                        context.go('/dashboard');
-                        // TODO: Implementasi logika login dengan Supabase / Riverpod
+                        handleLogin(context);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryGreen,
@@ -224,15 +289,26 @@ class _LoginPageState extends State<LoginPage> {
                           borderRadius: BorderRadius.circular(25),
                         ),
                       ),
-                      child: const Text(
-                        'Login',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      child: isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
+                              'Login',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
+
+                  if (error != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Text(
+                        error!,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ),
 
                   const SizedBox(height: 24),
 

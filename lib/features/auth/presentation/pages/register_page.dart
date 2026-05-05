@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sipekatbc/core/constants/app_colors.dart';
+import 'package:sipekatbc/features/auth/presentation/controllers/auth_controller.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -18,6 +19,78 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
+
+  bool isLoading = false;
+  final controller = AuthController();
+
+  String? error;
+  String? nameError;
+  String? emailError;
+  String? passwordError;
+  String? confirmPasswordError;
+
+  bool _validateForm() {
+    final nameText = _nameController.text.trim();
+    final emailText = _emailController.text.trim();
+    final passwordText = _passwordController.text;
+    final confirmText = _confirmPasswordController.text;
+
+    String? newNameError;
+    String? newEmailError;
+    String? newPasswordError;
+    String? newConfirmPasswordError;
+
+    newNameError = controller.validateName(nameText);
+
+    newEmailError = controller.validateEmail(emailText);
+
+    newPasswordError = controller.validatePassword(passwordText);
+
+    newConfirmPasswordError = controller.validateConfirmPassword(
+      passwordText,
+      confirmText,
+    );
+
+    setState(() {
+      nameError = newNameError;
+      emailError = newEmailError;
+      passwordError = newPasswordError;
+      confirmPasswordError = newConfirmPasswordError;
+    });
+
+    return newNameError == null &&
+        newEmailError == null &&
+        newPasswordError == null &&
+        newConfirmPasswordError == null;
+  }
+
+  void handleRegister(BuildContext context) async {
+    if (!_validateForm()) {
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+      error = null;
+    });
+
+    final result = await controller.register(
+      _nameController.text,
+      _emailController.text,
+      _passwordController.text,
+      _confirmPasswordController.text,
+    );
+
+    if (!context.mounted) return;
+
+    setState(() => isLoading = false);
+
+    if (result != null) {
+      setState(() => error = result);
+    } else {
+      context.go('/login');
+    }
+  }
 
   @override
   void dispose() {
@@ -135,6 +208,14 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                     ),
                   ),
+                  if (nameError != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text(
+                        nameError!,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ),
 
                   const SizedBox(height: 16),
 
@@ -174,6 +255,14 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                     ),
                   ),
+                  if (emailError != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text(
+                        emailError!,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ),
 
                   const SizedBox(height: 16),
 
@@ -226,6 +315,14 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                     ),
                   ),
+                  if (passwordError != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text(
+                        passwordError!,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ),
 
                   const SizedBox(height: 16),
 
@@ -279,6 +376,14 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                     ),
                   ),
+                  if (confirmPasswordError != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text(
+                        confirmPasswordError!,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ),
 
                   const SizedBox(height: 32),
 
@@ -288,7 +393,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     height: 50,
                     child: ElevatedButton(
                       onPressed: () {
-                        // TODO: Implementasi logika register dan navigasi ke halaman login setelah berhasil register
+                        handleRegister(context);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryGreen,
@@ -298,15 +403,26 @@ class _RegisterPageState extends State<RegisterPage> {
                           borderRadius: BorderRadius.circular(25),
                         ),
                       ),
-                      child: const Text(
-                        'Register',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      child: isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
+                              'Register',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
+
+                  if (error != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Text(
+                        error!,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ),
 
                   const SizedBox(height: 24),
 
@@ -332,7 +448,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 40), // Spacing bawah ekstra
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
