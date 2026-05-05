@@ -17,7 +17,7 @@ class Profile {
     return Profile(
       id: json['id'],
       name: json['name'] ?? '',
-      email: json['email'],
+      email: email,
       role: json['role'] ?? 'user',
       avatarUrl: json['avatar_url'],
     );
