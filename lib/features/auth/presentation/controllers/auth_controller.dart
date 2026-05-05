@@ -1,4 +1,6 @@
+import 'package:sipekatbc/core/session/user_session.dart';
 import 'package:sipekatbc/features/auth/data/auth_repository.dart';
+import 'package:sipekatbc/models/profile_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthController {
@@ -53,6 +55,13 @@ class AuthController {
 
     try {
       await _repository.login(email: email, password: password);
+
+      final profile = await fetchProfile();
+
+      if (profile != null) {
+        UserSession.currentUser = profile;
+      }
+
       return null;
     } catch (e) {
       return 'Login gagal: $e';
@@ -85,5 +94,19 @@ class AuthController {
     } catch (_) {
       return "Terjadi kesalahan, coba lagi";
     }
+  }
+
+  Future<Profile?> fetchProfile() async {
+    try {
+      final profile = await _repository.getProfile();
+      return profile;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> logout() async {
+    await _repository.logout();
+    UserSession.clear();
   }
 }

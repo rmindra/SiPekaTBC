@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sipekatbc/core/constants/app_colors.dart';
+import 'package:sipekatbc/core/session/user_session.dart';
+import 'package:sipekatbc/features/auth/presentation/controllers/auth_controller.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -35,9 +37,12 @@ class ProfilePage extends StatelessWidget {
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       backgroundColor: Colors.white, // 1. Ubah jadi putih polos
-      surfaceTintColor: Colors.transparent, // 2. Wajib! Mencegah warna putihnya berubah kusam di Material 3
+      surfaceTintColor: Colors
+          .transparent, // 2. Wajib! Mencegah warna putihnya berubah kusam di Material 3
       elevation: 4, // 3. Menambahkan ketebalan bayangan
-      shadowColor: Colors.black.withValues(alpha: 0.08), // 4. Bikin bayangannya sangat soft/halus
+      shadowColor: Colors.black.withValues(
+        alpha: 0.08,
+      ), // 4. Bikin bayangannya sangat soft/halus
       centerTitle: true,
       title: const Text(
         'SiPekaTBC',
@@ -83,9 +88,12 @@ class ProfilePage extends StatelessWidget {
               child: CircleAvatar(
                 radius: 50,
                 backgroundColor: AppColors.grayForm,
-                backgroundImage: const NetworkImage(
-                  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop', // Ganti dengan asset lokal nanti
-                ),
+                backgroundImage: UserSession.currentUser?.avatarUrl != null
+                    ? NetworkImage(UserSession.currentUser!.avatarUrl!)
+                    : null,
+                child: UserSession.currentUser?.avatarUrl == null
+                    ? const Icon(Icons.person)
+                    : null,
               ),
             ),
             // Tombol Edit (Pensil)
@@ -116,10 +124,7 @@ class ProfilePage extends StatelessWidget {
         const SizedBox(height: 4),
         const Text(
           'budi.santoso@email.com',
-          style: TextStyle(
-            fontSize: 14,
-            color: AppColors.textSecondary,
-          ),
+          style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
         ),
       ],
     );
@@ -150,7 +155,11 @@ class ProfilePage extends StatelessWidget {
               color: Color(0xFFE3E9E8), // Sesuai warna menu grid sebelumnya
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.menu_book, color: AppColors.primaryGreen, size: 24),
+            child: const Icon(
+              Icons.menu_book,
+              color: AppColors.primaryGreen,
+              size: 24,
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -168,7 +177,10 @@ class ProfilePage extends StatelessWidget {
                 const SizedBox(height: 4),
                 RichText(
                   text: const TextSpan(
-                    style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                    ),
                     children: [
                       TextSpan(text: 'Kamu telah membaca '),
                       TextSpan(
@@ -198,7 +210,11 @@ class ProfilePage extends StatelessWidget {
         const SizedBox(height: 12),
         _buildMenuListItem(Icons.info_outline, 'Tentang SiPekaTBC', () {}),
         const SizedBox(height: 12),
-        _buildMenuListItem(Icons.health_and_safety_outlined, 'Syarat & Ketentuan /\nDisclaimer Medis', () {}),
+        _buildMenuListItem(
+          Icons.health_and_safety_outlined,
+          'Syarat & Ketentuan /\nDisclaimer Medis',
+          () {},
+        ),
       ],
     );
   }
@@ -242,11 +258,13 @@ class ProfilePage extends StatelessWidget {
       height: 55,
       child: OutlinedButton.icon(
         onPressed: () {
-          // TODO: Implementasi logika logout Supabase
+          AuthController().logout();
           context.go('/login');
         },
         style: OutlinedButton.styleFrom(
-          backgroundColor: AppColors.redButton.withValues(alpha: 0.1), // Efek merah sangat transparan
+          backgroundColor: AppColors.redButton.withValues(
+            alpha: 0.1,
+          ), // Efek merah sangat transparan
           side: const BorderSide(color: AppColors.redButtonBorder),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(25),
@@ -276,10 +294,12 @@ class ProfilePage extends StatelessWidget {
         onPressed: () {},
         backgroundColor: AppColors.primaryGreen,
         elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(50),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+        child: const Icon(
+          Icons.smart_toy_outlined,
+          color: Colors.white,
+          size: 32,
         ),
-        child: const Icon(Icons.smart_toy_outlined, color: Colors.white, size: 32),
       ),
     );
   }
@@ -308,7 +328,10 @@ class ProfilePage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: const [
                 SizedBox(height: 28),
-                Text('Chatbot', style: TextStyle(fontSize: 10, color: AppColors.grayIcon)),
+                Text(
+                  'Chatbot',
+                  style: TextStyle(fontSize: 10, color: AppColors.grayIcon),
+                ),
               ],
             ),
 

@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:sipekatbc/models/profile_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:sipekatbc/service/supabase_client.dart';
 
@@ -32,5 +35,52 @@ class AuthRepository {
 
   Future<void> logout() async {
     await _client.auth.signOut();
+  }
+
+  Future<Profile> getProfile() async {
+    final user = _client.auth.currentUser;
+
+    if (user == null) {
+      throw Exception('User tidak ditemukan');
+    }
+
+    final res = await _client
+        .from('profiles')
+        .select()
+        .eq('id', user.id)
+        .single();
+
+    return Profile.fromJson(res, user.email ?? '');
+  }
+
+  Future<String> uploadAvatar(String filePath) async {
+    final user = _client.auth.currentUser;
+
+    final fileName = 'avatar_${user!.id}.jpg';
+
+    await _client.storage
+        .from('avatars')
+        .upload(
+          fileName,
+          File(filePath),
+          fileOptions: const FileOptions(cacheControl: '3600', upsert: true),
+        );
+
+    final publicUrl = _client.storage.from('avatars').getPublicUrl(fileName);
+
+    return publicUrl;
+  }
+
+  Future<void> updateAvatar(String url) async {
+    final user = _client.auth.currentUser;
+
+    if (user == null) {
+      throw Exception('User tidak ditemukan');
+    }
+
+    await _client
+        .from('profiles')
+        .update({'avatar_url': url})
+        .eq('id', user.id);
   }
 }
