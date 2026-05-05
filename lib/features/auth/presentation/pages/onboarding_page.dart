@@ -11,9 +11,10 @@ class OnboardingPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
+        bottom: false,
         child: Column(
           children: [
-            const SizedBox(height: 60),
+            const SizedBox(height: 40),
 
             // Logo and App Name
             Row(
@@ -66,7 +67,12 @@ class OnboardingPage extends StatelessWidget {
                   ),
                 ],
               ),
-              padding: const EdgeInsets.fromLTRB(32, 32, 32, 64),
+              padding: EdgeInsets.fromLTRB(
+                32,
+                32,
+                32,
+                64 + MediaQuery.of(context).padding.bottom,
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -80,7 +86,7 @@ class OnboardingPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 48),
                   const Text(
-                    'Your Health Journey\nStarts Here',
+                    'Your Health Journey Starts Here',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 36,
@@ -92,7 +98,7 @@ class OnboardingPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                   const Text(
-                    'Empowering you with accurate TBC\ninformation and 24/7 support.',
+                    'Empowering you with accurate TBC information and 24/7 support.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 20,
@@ -117,7 +123,7 @@ class OnboardingPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(27),
                         ),
                         padding: const EdgeInsets.symmetric(
-                          vertical: 24,
+                          vertical: 20,
                           horizontal: 64,
                         ),
                       ),

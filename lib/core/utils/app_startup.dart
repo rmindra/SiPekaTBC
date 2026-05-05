@@ -3,20 +3,21 @@ import 'package:sipekatbc/service/supabase_client.dart';
 
 class AppStartup {
   static Future<String> getInitialRoute() async {
-    final prefs = await SharedPreferences.getInstance();
+    // final prefs = await SharedPreferences.getInstance();
 
-    final onBoardingCompleted = prefs.getBool('onboarding_completed') ?? false;
+    // final onBoardingCompleted = prefs.getBool('onboarding_completed') ?? false;
 
-    if (!onBoardingCompleted) {
-      return '/onboarding';
-    }
+    // if (!onBoardingCompleted) {
+    //   return '/onboarding';
+    // }
 
-    final session = supabase.auth.currentSession;
+    // final session = supabase.auth.currentSession;
 
-    if (session != null) {
-      return '/dashboard';
-    }
+    // if (session != null) {
+    //   return '/dashboard';
+    // }
 
-    return '/login';
+    // return '/login';
+    return '/onboarding';
   }
 }
