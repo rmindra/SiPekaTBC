@@ -109,4 +109,26 @@ class AuthController {
     await _repository.logout();
     UserSession.clear();
   }
+
+  Future<String?> updateAvatar(String filePath) async {
+    try {
+      final url = await _repository.uploadAvatar(filePath);
+      await _repository.updateAvatar(url);
+
+      final current = UserSession.currentUser;
+      if (current != null) {
+        UserSession.currentUser = Profile(
+          id: current.id,
+          name: current.name,
+          email: current.email,
+          role: current.role,
+          avatarUrl: url,
+        );
+      }
+
+      return null;
+    } catch (e) {
+      return 'Gagal mengunggah foto profil: $e';
+    }
+  }
 }

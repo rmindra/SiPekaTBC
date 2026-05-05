@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sipekatbc/core/constants/app_colors.dart';
+import 'package:sipekatbc/core/session/user_session.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -53,12 +54,14 @@ class HomePage extends StatelessWidget {
             radius: 18,
             backgroundColor: AppColors.grayForm,
             child: ClipOval(
-              child: Image.network(
-                'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
-                fit: BoxFit.cover,
-                width: 36,
-                height: 36,
-              ),
+              child: UserSession.currentUser?.avatarUrl != null
+                  ? Image.network(
+                      UserSession.currentUser!.avatarUrl!,
+                      fit: BoxFit.cover,
+                      width: 36,
+                      height: 36,
+                    )
+                  : const Icon(Icons.person, color: AppColors.grayIcon),
             ),
           ),
         ),
@@ -72,28 +75,22 @@ class HomePage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          children: const [
+          children: [
             Text(
-              'Halo, Budi! ',
-              style: TextStyle(
+              'Hello, ${UserSession.currentUser?.name ?? 'Nama Pengguna'} ',
+              style: const TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
               ),
             ),
-            Text(
-              '👋',
-              style: TextStyle(fontSize: 28),
-            ),
+            const Text('👋', style: TextStyle(fontSize: 28)),
           ],
         ),
         const SizedBox(height: 8),
         const Text(
           'Yuk, tambah wawasan kesehatanmu hari ini!',
-          style: TextStyle(
-            fontSize: 15,
-            color: AppColors.textSecondary,
-          ),
+          style: TextStyle(fontSize: 15, color: AppColors.textSecondary),
         ),
       ],
     );
@@ -163,7 +160,9 @@ class HomePage extends StatelessWidget {
               width: 60,
               height: 60,
               decoration: BoxDecoration(
-                color: const Color(0xFFE3E9E8), // Menggunakan kode warna dari kamu
+                color: const Color(
+                  0xFFE3E9E8,
+                ), // Menggunakan kode warna dari kamu
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(
@@ -224,17 +223,21 @@ class HomePage extends StatelessWidget {
             clipBehavior: Clip.none,
             children: [
               _buildEduCard(
-                imageUrl: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?q=80&w=500&auto=format&fit=crop',
+                imageUrl:
+                    'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?q=80&w=500&auto=format&fit=crop',
                 title: 'Memahami Gejala Awal TBC dan Kapan Harus ke Dokter',
-                desc: 'Kenali tanda-tanda awal tuberkulosis agar bisa mendapatkan penanganan lebih cepat',
+                desc:
+                    'Kenali tanda-tanda awal tuberkulosis agar bisa mendapatkan penanganan lebih cepat',
                 time: '3 menit baca',
                 isNew: true,
               ),
               const SizedBox(width: 16),
               _buildEduCard(
-                imageUrl: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=500&auto=format&fit=crop',
+                imageUrl:
+                    'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=500&auto=format&fit=crop',
                 title: 'Langkah Tepat Mencegah Penularan TBC di Rumah',
-                desc: 'Praktik kebersihan dan sirkulasi udara untuk melindungi keluarga tercinta',
+                desc:
+                    'Praktik kebersihan dan sirkulasi udara untuk melindungi keluarga tercinta',
                 time: '5 menit baca',
                 isNew: false,
               ),
@@ -289,7 +292,10 @@ class HomePage extends StatelessWidget {
                   top: 12,
                   right: 12,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       // ERROR 2 DIPERBAIKI: withOpacity menjadi withValues
                       color: Colors.white.withValues(alpha: 0.9),
@@ -337,11 +343,18 @@ class HomePage extends StatelessWidget {
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    const Icon(Icons.access_time, size: 14, color: AppColors.grayIcon),
+                    const Icon(
+                      Icons.access_time,
+                      size: 14,
+                      color: AppColors.grayIcon,
+                    ),
                     const SizedBox(width: 6),
                     Text(
                       time,
-                      style: const TextStyle(fontSize: 12, color: AppColors.grayIcon),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.grayIcon,
+                      ),
                     ),
                   ],
                 ),
@@ -363,10 +376,12 @@ class HomePage extends StatelessWidget {
         onPressed: () {},
         backgroundColor: AppColors.primaryGreen,
         elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(50),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+        child: const Icon(
+          Icons.smart_toy_outlined,
+          color: Colors.white,
+          size: 32,
         ),
-        child: const Icon(Icons.smart_toy_outlined, color: Colors.white, size: 32),
       ),
     );
   }
@@ -394,7 +409,9 @@ class HomePage extends StatelessWidget {
             // --- UBAH BAGIAN INI ---
             InkWell(
               onTap: () {
-                context.go('/profile'); // Perintah untuk pindah ke halaman profile
+                context.go(
+                  '/profile',
+                ); // Perintah untuk pindah ke halaman profile
               },
               child: _buildNavItem(Icons.person_outline, 'Profile', false),
             ),

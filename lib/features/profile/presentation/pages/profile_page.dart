@@ -1,11 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:sipekatbc/core/constants/app_colors.dart';
 import 'package:sipekatbc/core/session/user_session.dart';
 import 'package:sipekatbc/features/auth/presentation/controllers/auth_controller.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  final AuthController _authController = AuthController();
+  final ImagePicker _imagePicker = ImagePicker();
+  bool _isUploadingAvatar = false;
 
   @override
   Widget build(BuildContext context) {
@@ -36,13 +46,10 @@ class ProfilePage extends StatelessWidget {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      backgroundColor: Colors.white, // 1. Ubah jadi putih polos
-      surfaceTintColor: Colors
-          .transparent, // 2. Wajib! Mencegah warna putihnya berubah kusam di Material 3
-      elevation: 4, // 3. Menambahkan ketebalan bayangan
-      shadowColor: Colors.black.withValues(
-        alpha: 0.08,
-      ), // 4. Bikin bayangannya sangat soft/halus
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      elevation: 4,
+      shadowColor: Colors.black.withValues(alpha: 0.08),
       centerTitle: true,
       title: const Text(
         'SiPekaTBC',
@@ -52,23 +59,6 @@ class ProfilePage extends StatelessWidget {
           fontSize: 20,
         ),
       ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 20.0),
-          child: CircleAvatar(
-            radius: 18,
-            backgroundColor: AppColors.grayForm,
-            child: ClipOval(
-              child: Image.network(
-                'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
-                fit: BoxFit.cover,
-                width: 36,
-                height: 36,
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 
@@ -100,31 +90,46 @@ class ProfilePage extends StatelessWidget {
             Positioned(
               bottom: 4,
               right: 4,
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryGreen,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
+              child: InkWell(
+                onTap: _isUploadingAvatar
+                    ? null
+                    : () => _changeProfilePicture(context),
+                customBorder: const CircleBorder(),
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryGreen,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                  child: _isUploadingAvatar
+                      ? const SizedBox(
+                          height: 14,
+                          width: 14,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.edit, color: Colors.white, size: 14),
                 ),
-                child: const Icon(Icons.edit, color: Colors.white, size: 14),
               ),
             ),
           ],
         ),
         const SizedBox(height: 16),
-        const Text(
-          'Budi Santoso',
-          style: TextStyle(
+        Text(
+          UserSession.currentUser?.name ?? 'Nama Pengguna',
+          style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
             color: AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 4),
-        const Text(
-          'budi.santoso@email.com',
-          style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+        Text(
+          UserSession.currentUser?.email ?? 'email@example.com',
+          style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
         ),
       ],
     );
@@ -367,5 +372,33 @@ class ProfilePage extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  Future<void> _changeProfilePicture(BuildContext context) async {
+    final image = await _imagePicker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+    );
+
+    if (image == null) {
+      return;
+    }
+
+    setState(() => _isUploadingAvatar = true);
+
+    final result = await _authController.updateAvatar(image.path);
+
+    if (!mounted) return;
+
+    setState(() => _isUploadingAvatar = false);
+
+    if (result != null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(result)));
+      return;
+    }
+
+    setState(() {});
   }
 }

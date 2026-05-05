@@ -48,7 +48,17 @@ class AuthRepository {
         .from('profiles')
         .select()
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
+
+    if (res == null) {
+      return Profile(
+        id: user.id,
+        name: user.userMetadata?['name'] ?? '',
+        email: user.email ?? '',
+        role: 'user',
+        avatarUrl: null,
+      );
+    }
 
     return Profile.fromJson(res, user.email ?? '');
   }
@@ -56,7 +66,11 @@ class AuthRepository {
   Future<String> uploadAvatar(String filePath) async {
     final user = _client.auth.currentUser;
 
-    final fileName = 'avatar_${user!.id}.jpg';
+    if (user == null) {
+      throw Exception('User tidak ditemukan');
+    }
+
+    final fileName = 'avatar_${user.id}.jpg';
 
     await _client.storage
         .from('avatars')
