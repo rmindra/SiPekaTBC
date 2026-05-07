@@ -400,48 +400,36 @@ class HomePage extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildNavItem(Icons.home, 'Home', true),
-            _buildNavItem(Icons.map_outlined, 'Maps', false),
-
-            // Spacing untuk Chatbot di tengah
+            _buildNavItem(Icons.home_outlined, 'Home', true, () {}),
+            _buildNavItem(Icons.map_outlined, 'Maps', false, () {}),
             const SizedBox(width: 40),
-
-            _buildNavItem(Icons.menu_book_outlined, 'Education', false),
-
-            // --- UBAH BAGIAN INI ---
-            InkWell(
-              onTap: () {
-                context.go(
-                  '/profile',
-                ); // Perintah untuk pindah ke halaman profile
-              },
-              child: _buildNavItem(Icons.person_outline, 'Profile', false),
-            ),
+            _buildNavItem(Icons.menu_book, 'Education', false, () => context.go('/education')),
+            _buildNavItem(Icons.person_outline, 'Profile', false, () => context.go('/profile')),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, bool isActive) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(
-          icon,
-          color: isActive ? AppColors.primaryGreen : AppColors.grayIcon,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10,
-            color: isActive ? AppColors.primaryGreen : AppColors.grayIcon,
-            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+  Widget _buildNavItem(IconData icon, String label, bool isActive, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: isActive ? AppColors.primaryGreen : AppColors.grayIcon),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              color: isActive ? AppColors.primaryGreen : AppColors.grayIcon,
+              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

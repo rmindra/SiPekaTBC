@@ -5,6 +5,7 @@ import 'package:sipekatbc/features/auth/presentation/pages/register_page.dart';
 import 'package:sipekatbc/features/auth/presentation/pages/reset_password_page.dart';
 import '../features/home/presentation/pages/home_page.dart';
 import '../features/profile/presentation/pages/profile_page.dart';
+import '../features/education/presentation/pages/education_page.dart';
 
 GoRouter createRouter(String initialRoute) {
   return GoRouter(
@@ -30,6 +31,10 @@ GoRouter createRouter(String initialRoute) {
       GoRoute(
         path: '/profile',
         builder: (context,state) => const ProfilePage(),
+      ),
+      GoRoute(
+        path: '/education',
+        builder: (context, state) => const EducationPage(),
       ),
     ],
   );

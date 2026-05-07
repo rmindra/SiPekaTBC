@@ -338,56 +338,36 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            // Home ditambahkan fungsi klik
-            InkWell(
-              onTap: () => context.go('/dashboard'),
-              child: _buildNavItem(Icons.home_outlined, 'Home', false),
-            ),
-            _buildNavItem(Icons.map_outlined, 'Maps', false),
-
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: const [
-                SizedBox(height: 28),
-                Text(
-                  'Chatbot',
-                  style: TextStyle(fontSize: 10, color: AppColors.grayIcon),
-                ),
-              ],
-            ),
-
-            _buildNavItem(Icons.menu_book_outlined, 'Education', false),
-            // Profile dibuat menjadi tab aktif (hijau)
-            InkWell(
-              onTap: () {},
-              child: _buildNavItem(Icons.person, 'Profile', true),
-            ),
+            _buildNavItem(Icons.home_outlined, 'Home', false, () => context.go('/dashboard')),
+            _buildNavItem(Icons.map_outlined, 'Maps', false, () {}),
+            const SizedBox(width: 40),
+            _buildNavItem(Icons.menu_book, 'Education', false, () => context.go('/education')),
+            _buildNavItem(Icons.person_outline, 'Profile', true, () {}),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, bool isActive) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(
-          icon,
-          color: isActive ? AppColors.primaryGreen : AppColors.grayIcon,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10,
-            color: isActive ? AppColors.primaryGreen : AppColors.grayIcon,
-            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+  Widget _buildNavItem(IconData icon, String label, bool isActive, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: isActive ? AppColors.primaryGreen : AppColors.grayIcon),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              color: isActive ? AppColors.primaryGreen : AppColors.grayIcon,
+              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
