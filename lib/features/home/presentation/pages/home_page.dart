@@ -36,8 +36,10 @@ class HomePage extends StatelessWidget {
   // --- APP BAR ---
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      backgroundColor: AppColors.background,
-      elevation: 0,
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      elevation: 4,
+      shadowColor: Colors.black.withValues(alpha: 0.08),
       centerTitle: true,
       title: const Text(
         'SiPekaTBC',
