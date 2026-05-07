@@ -44,13 +44,19 @@ class AuthRepository {
       throw Exception('User tidak ditemukan');
     }
 
-    final res = await _client
-        .from('profiles')
-        .select()
-        .eq('id', user.id)
-        .maybeSingle();
+    try {
+      final res = await _client
+          .from('profiles')
+          .select()
+          .eq('id', user.id)
+          .single();
 
-    if (res == null) {
+      return Profile.fromJson(res, user.email ?? '');
+    } on PostgrestException catch (e) {
+      if (e.code != 'PGRST116') {
+        rethrow;
+      }
+
       return Profile(
         id: user.id,
         name: user.userMetadata?['name'] ?? '',
@@ -59,8 +65,6 @@ class AuthRepository {
         avatarUrl: null,
       );
     }
-
-    return Profile.fromJson(res, user.email ?? '');
   }
 
   Future<String> uploadAvatar(String filePath) async {
@@ -70,7 +74,7 @@ class AuthRepository {
       throw Exception('User tidak ditemukan');
     }
 
-    final fileName = 'avatar_${user.id}.jpg';
+    final fileName = '${user.id}/avatar.jpg';
 
     await _client.storage
         .from('avatars')
@@ -81,8 +85,10 @@ class AuthRepository {
         );
 
     final publicUrl = _client.storage.from('avatars').getPublicUrl(fileName);
+    final cacheBustedUrl =
+        '$publicUrl?v=${DateTime.now().millisecondsSinceEpoch}';
 
-    return publicUrl;
+    return cacheBustedUrl;
   }
 
   Future<void> updateAvatar(String url) async {

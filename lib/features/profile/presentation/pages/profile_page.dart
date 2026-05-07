@@ -18,6 +18,23 @@ class _ProfilePageState extends State<ProfilePage> {
   bool _isUploadingAvatar = false;
 
   @override
+  void initState() {
+    super.initState();
+    _refreshProfile();
+  }
+
+  Future<void> _refreshProfile() async {
+    final profile = await _authController.fetchProfile();
+    if (!mounted) return;
+
+    if (profile != null) {
+      UserSession.currentUser = profile;
+    }
+
+    setState(() {});
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
