@@ -21,11 +21,34 @@ class _EducationPageState extends State<EducationPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: _buildAppBar(),
-      body: Column(
+      body: Stack(
         children: [
-          _buildSearchAndFilter(),
-          Expanded(
-            child: _buildArticleList(),
+          // Konten Utama
+          Column(
+            children: [
+              _buildSearchAndFilter(),
+              Expanded(
+                child: _buildArticleList(),
+              ),
+            ],
+          ),
+
+          // --- TAMBAHAN: Button + di pojok kanan bawah ---
+          Positioned(
+            bottom: 20,
+            right: 20,
+            child: FloatingActionButton(
+              heroTag: 'add_article_btn', // Penting agar tidak bentrok dengan FAB Chatbot
+              onPressed: () {
+                // TODO: Tambahkan aksi ketika tombol + diklik di sini
+              },
+              backgroundColor: AppColors.primaryGreen,
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(Icons.add, color: Colors.white, size: 28),
+            ),
           ),
         ],
       ),
@@ -35,7 +58,6 @@ class _EducationPageState extends State<EducationPage> {
     );
   }
 
-  // --- PERBAIKAN: AppBar disamakan persis dengan HomePage ---
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       backgroundColor: Colors.white,
@@ -136,39 +158,57 @@ class _EducationPageState extends State<EducationPage> {
     );
   }
 
+  // --- BAGIAN YANG DITAMBAHKAN ONTAP ---
   Widget _buildArticleList() {
     return ListView(
       padding: const EdgeInsets.all(20),
-      children: const [
-        EducationArticleCard(
-          category: 'GEJALA',
-          title: 'Mengenali Gejala Awal TBC yang Sering...',
-          isRead: true,
-          imageUrl: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?q=80&w=200&auto=format&fit=crop',
+      children: [ // const dihapus karena InkWell dengan aksi context bukan sebuah konstan
+        InkWell(
+          onTap: () {
+            context.push('/article-detail');
+          },
+          child: const EducationArticleCard(
+            category: 'GEJALA',
+            title: 'Mengenali Gejala Awal TBC yang Sering...',
+            isRead: true,
+            imageUrl: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?q=80&w=200&auto=format&fit=crop',
+          ),
         ),
-        SizedBox(height: 16),
-        EducationArticleCard(
-          category: 'PENGOBATAN',
-          title: 'Pentingnya Kepatuhan Minum Obat TBC 6 Bulan',
-          isRead: false,
-          imageUrl: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=200&auto=format&fit=crop',
+        const SizedBox(height: 16),
+        InkWell(
+          onTap: () {
+            context.push('/article-detail');
+          },
+          child: const EducationArticleCard(
+            category: 'PENGOBATAN',
+            title: 'Pentingnya Kepatuhan Minum Obat TBC 6 Bulan',
+            isRead: false,
+            imageUrl: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=200&auto=format&fit=crop',
+          ),
         ),
-        SizedBox(height: 16),
-        EducationArticleCard(
-          category: 'MITOS',
-          title: '5 Mitos Populer Tentang Penularan TBC di...',
-          isRead: true,
-          imageUrl: 'https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?q=80&w=200&auto=format&fit=crop',
+        const SizedBox(height: 16),
+        InkWell(
+          onTap: () {
+            context.push('/article-detail');
+          },
+          child: const EducationArticleCard(
+            category: 'MITOS',
+            title: '5 Mitos Populer Tentang Penularan TBC di...',
+            isRead: true,
+            imageUrl: 'https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?q=80&w=200&auto=format&fit=crop',
+          ),
         ),
-        SizedBox(height: 16),
-
-        // --- INI YANG DIGANTI UNTUK ARTIKEL KEEMPAT ---
-        EducationArticleCard(
-          category: 'PENCEGAHAN',
-          title: 'Cara Mencegah Penularan TBC pada Anggota...',
-          isRead: false,
-          // URL baru yang valid (Gambar medis/masker pencegahan)
-          imageUrl: 'https://images.unsplash.com/photo-1583324113626-70df0f4deaab?q=80&w=200&auto=format&fit=crop',
+        const SizedBox(height: 16),
+        InkWell(
+          onTap: () {
+            context.push('/article-detail');
+          },
+          child: const EducationArticleCard(
+            category: 'PENCEGAHAN',
+            title: 'Cara Mencegah Penularan TBC pada Anggota...',
+            isRead: false,
+            imageUrl: 'https://images.unsplash.com/photo-1583324113626-70df0f4deaab?q=80&w=200&auto=format&fit=crop',
+          ),
         ),
       ],
     );
