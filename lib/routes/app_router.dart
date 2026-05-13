@@ -1,11 +1,18 @@
 import 'package:go_router/go_router.dart';
+
+// --- AUTH PAGES ---
 import 'package:sipekatbc/features/auth/presentation/pages/onboarding_page.dart';
 import 'package:sipekatbc/features/auth/presentation/pages/login_page.dart';
 import 'package:sipekatbc/features/auth/presentation/pages/register_page.dart';
 import 'package:sipekatbc/features/auth/presentation/pages/reset_password_page.dart';
-import '../features/home/presentation/pages/home_page.dart';
-import '../features/profile/presentation/pages/profile_page.dart';
-import '../features/education/presentation/pages/education_page.dart';
+
+// --- MAIN PAGES ---
+import 'package:sipekatbc/features/home/presentation/pages/home_page.dart';
+import 'package:sipekatbc/features/profile/presentation/pages/profile_page.dart';
+
+// --- EDUCATION PAGES ---
+import 'package:sipekatbc/features/education/presentation/pages/education_page.dart';
+import 'package:sipekatbc/features/education/presentation/pages/article_detail_page.dart';
 
 GoRouter createRouter(String initialRoute) {
   return GoRouter(
@@ -15,7 +22,10 @@ GoRouter createRouter(String initialRoute) {
         path: '/onboarding',
         builder: (context, state) => const OnboardingPage(),
       ),
-      GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
+      GoRoute(
+        path: '/login',
+        builder: (context, state) => const LoginPage(),
+      ),
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterPage(),
@@ -35,6 +45,10 @@ GoRouter createRouter(String initialRoute) {
       GoRoute(
         path: '/education',
         builder: (context, state) => const EducationPage(),
+      ),
+      GoRoute(
+        path: '/article-detail',
+        builder: (context, state) => const ArticleDetailPage(),
       ),
     ],
   );
