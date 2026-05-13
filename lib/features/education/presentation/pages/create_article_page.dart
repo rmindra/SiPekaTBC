@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sipekatbc/core/constants/app_colors.dart';
 import 'package:sipekatbc/core/session/user_session.dart';
+import 'package:sipekatbc/features/education/data/article_repository.dart';
 
 class CreateArticlePage extends StatefulWidget {
   const CreateArticlePage({super.key});
@@ -12,6 +13,21 @@ class CreateArticlePage extends StatefulWidget {
 
 class _CreateArticlePageState extends State<CreateArticlePage> {
   String _selectedCategory = 'Gejala'; // Default terpilih sesuai UI
+  final ArticleRepository _repository = ArticleRepository();
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _sourceUrlController = TextEditingController();
+  final TextEditingController _coverUrlController = TextEditingController();
+  final TextEditingController _contentController = TextEditingController();
+  bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _sourceUrlController.dispose();
+    _coverUrlController.dispose();
+    _contentController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,24 +39,35 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildUploadImageSection(),
-            const SizedBox(height: 24),
-
             _buildLabel('Article Title'),
-            _buildTextField(hint: 'Enter article title'),
+            _buildTextField(
+              hint: 'Enter article title',
+              controller: _titleController,
+            ),
             const SizedBox(height: 24),
 
             _buildLabel('Category'),
             _buildCategoryChips(),
             const SizedBox(height: 24),
 
+            _buildLabel('Cover Image URL'),
+            _buildTextField(
+              hint: 'https://...jpg',
+              controller: _coverUrlController,
+            ),
+            const SizedBox(height: 24),
+
             _buildLabel('Put Your Link Article'),
-            _buildTextField(hint: ''),
+            _buildTextField(
+              hint: 'https://...',
+              controller: _sourceUrlController,
+            ),
             const SizedBox(height: 24),
 
             _buildLabel('Article Content'),
             _buildTextField(
               hint: 'Write your article content here...',
+              controller: _contentController,
               maxLines: 6, // Biar kotaknya lebih besar ke bawah
             ),
             const SizedBox(height: 24),
@@ -83,52 +110,16 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
             child: ClipOval(
               child: UserSession.currentUser?.avatarUrl != null
                   ? Image.network(
-                UserSession.currentUser!.avatarUrl!,
-                fit: BoxFit.cover,
-                width: 36,
-                height: 36,
-              )
+                      UserSession.currentUser!.avatarUrl!,
+                      fit: BoxFit.cover,
+                      width: 36,
+                      height: 36,
+                    )
                   : const Icon(Icons.person, color: AppColors.grayIcon),
             ),
           ),
         ),
       ],
-    );
-  }
-
-  // --- UPLOAD IMAGE SECTION ---
-  Widget _buildUploadImageSection() {
-    return Container(
-      width: double.infinity,
-      height: 160,
-      decoration: BoxDecoration(
-        color: const Color(0xFFF5F9F9), // Abu-abu kehijauan sangat muda
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.grayForm),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // --- PERBAIKAN WARNA DI SINI ---
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: const BoxDecoration(
-              color: AppColors.primaryGreen, // SEKARANG HIJAU (seperti button Gejala)
-              shape: BoxShape.circle,
-            ),
-            // Ikon tetap putih agar terlihat jelas
-            child: const Icon(Icons.file_upload_outlined, color: Colors.white, size: 28),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Tap to upload cover image',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 14,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -148,15 +139,26 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
   }
 
   // --- HELPER TEXTFIELD ---
-  Widget _buildTextField({required String hint, int maxLines = 1}) {
+  Widget _buildTextField({
+    required String hint,
+    int maxLines = 1,
+    TextEditingController? controller,
+  }) {
     return TextField(
       maxLines: maxLines,
+      controller: controller,
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
+        hintStyle: const TextStyle(
+          color: AppColors.textSecondary,
+          fontSize: 14,
+        ),
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.grayForm),
@@ -245,16 +247,16 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: AppColors.grayForm.withValues(alpha: 0.3))),
+        border: Border(
+          top: BorderSide(color: AppColors.grayForm.withValues(alpha: 0.3)),
+        ),
       ),
       child: SafeArea(
         child: SizedBox(
           width: double.infinity,
           height: 50,
           child: ElevatedButton.icon(
-            onPressed: () {
-              // TODO: Aksi Publish Artikel ke Supabase
-            },
+            onPressed: _isSubmitting ? null : _handlePublish,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryGreen,
               shape: RoundedRectangleBorder(
@@ -263,9 +265,9 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
               elevation: 0,
             ),
             icon: const Icon(Icons.send, color: Colors.white, size: 18),
-            label: const Text(
-              'Publish Article',
-              style: TextStyle(
+            label: Text(
+              _isSubmitting ? 'Publishing...' : 'Publish Article',
+              style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
@@ -275,5 +277,56 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
         ),
       ),
     );
+  }
+
+  Future<void> _handlePublish() async {
+    final title = _titleController.text.trim();
+    final content = _contentController.text.trim();
+    final coverUrl = _coverUrlController.text.trim();
+    final sourceUrl = _sourceUrlController.text.trim();
+
+    if (title.isEmpty || content.isEmpty) {
+      _showSnackBar('Judul dan konten wajib diisi');
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      await _repository.createArticle(
+        title: title,
+        content: content,
+        category: _selectedCategory,
+        coverUrl: coverUrl.isEmpty ? null : coverUrl,
+        sourceUrl: sourceUrl.isEmpty ? null : sourceUrl,
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      _showSnackBar('Artikel berhasil dipublish');
+      context.pop();
+    } catch (e) {
+      _showSnackBar('Gagal publish artikel');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
+  }
+
+  void _showSnackBar(String message) {
+    if (!mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }

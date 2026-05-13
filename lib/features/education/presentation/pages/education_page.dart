@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sipekatbc/core/constants/app_colors.dart';
 import 'package:sipekatbc/core/session/user_session.dart';
+import 'package:sipekatbc/features/education/data/article_repository.dart';
+import 'package:sipekatbc/features/education/data/models/article_model.dart';
 
 import '../widgets/category_filter_item.dart';
 import '../widgets/education_article_card.dart';
@@ -15,6 +17,103 @@ class EducationPage extends StatefulWidget {
 
 class _EducationPageState extends State<EducationPage> {
   String selectedCategory = 'Semua';
+  String _searchQuery = '';
+  final ArticleRepository _repository = ArticleRepository();
+  final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
+  final List<Article> _articles = [];
+  Map<String, int> _progressByArticleId = {};
+  bool _isLoading = false;
+  bool _hasMore = true;
+  String? _errorMessage;
+  static const int _pageSize = 10;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInitial();
+    _scrollController.addListener(_handleScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadInitial() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final articles = await _repository.fetchArticles(limit: _pageSize);
+      final progressMap = await _repository.fetchReadingProgressMap();
+
+      setState(() {
+        _articles
+          ..clear()
+          ..addAll(articles);
+        _progressByArticleId = progressMap;
+        _hasMore = articles.length == _pageSize;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Gagal memuat artikel';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _refreshData() async {
+    await _loadInitial();
+  }
+
+  Future<void> _loadMore() async {
+    if (_isLoading || !_hasMore) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final next = await _repository.fetchArticles(
+        limit: _pageSize,
+        offset: _articles.length,
+      );
+
+      setState(() {
+        _articles.addAll(next);
+        _hasMore = next.length == _pageSize;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Gagal memuat artikel';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _handleScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      _loadMore();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,9 +126,7 @@ class _EducationPageState extends State<EducationPage> {
           Column(
             children: [
               _buildSearchAndFilter(),
-              Expanded(
-                child: _buildArticleList(),
-              ),
+              Expanded(child: _buildArticleList()),
             ],
           ),
 
@@ -38,9 +135,11 @@ class _EducationPageState extends State<EducationPage> {
             bottom: 20,
             right: 20,
             child: FloatingActionButton(
-              heroTag: 'add_article_btn', // Penting agar tidak bentrok dengan FAB Chatbot
-              onPressed: () {
-                // TODO: Tambahkan aksi ketika tombol + diklik di sini
+              heroTag:
+                  'add_article_btn', // Penting agar tidak bentrok dengan FAB Chatbot
+              onPressed: () async {
+                await context.push('/create-article');
+                await _refreshData();
               },
               backgroundColor: AppColors.primaryGreen,
               elevation: 4,
@@ -81,11 +180,11 @@ class _EducationPageState extends State<EducationPage> {
             child: ClipOval(
               child: UserSession.currentUser?.avatarUrl != null
                   ? Image.network(
-                UserSession.currentUser!.avatarUrl!,
-                fit: BoxFit.cover,
-                width: 36,
-                height: 36,
-              )
+                      UserSession.currentUser!.avatarUrl!,
+                      fit: BoxFit.cover,
+                      width: 36,
+                      height: 36,
+                    )
                   : const Icon(Icons.person, color: AppColors.grayIcon),
             ),
           ),
@@ -103,13 +202,25 @@ class _EducationPageState extends State<EducationPage> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: TextField(
+              controller: _searchController,
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value.trim();
+                });
+              },
               decoration: InputDecoration(
                 hintText: 'Cari artikel edukasi...',
-                hintStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                hintStyle: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                ),
                 prefixIcon: const Icon(Icons.search, color: AppColors.grayIcon),
                 filled: true,
                 fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 0,
+                  horizontal: 16,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(color: AppColors.grayForm),
@@ -160,58 +271,79 @@ class _EducationPageState extends State<EducationPage> {
 
   // --- BAGIAN YANG DITAMBAHKAN ONTAP ---
   Widget _buildArticleList() {
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: [ // const dihapus karena InkWell dengan aksi context bukan sebuah konstan
-        InkWell(
-          onTap: () {
-            context.push('/article-detail');
-          },
-          child: const EducationArticleCard(
-            category: 'GEJALA',
-            title: 'Mengenali Gejala Awal TBC yang Sering...',
-            isRead: true,
-            imageUrl: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?q=80&w=200&auto=format&fit=crop',
-          ),
-        ),
-        const SizedBox(height: 16),
-        InkWell(
-          onTap: () {
-            context.push('/article-detail');
-          },
-          child: const EducationArticleCard(
-            category: 'PENGOBATAN',
-            title: 'Pentingnya Kepatuhan Minum Obat TBC 6 Bulan',
-            isRead: false,
-            imageUrl: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=200&auto=format&fit=crop',
-          ),
-        ),
-        const SizedBox(height: 16),
-        InkWell(
-          onTap: () {
-            context.push('/article-detail');
-          },
-          child: const EducationArticleCard(
-            category: 'MITOS',
-            title: '5 Mitos Populer Tentang Penularan TBC di...',
-            isRead: true,
-            imageUrl: 'https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?q=80&w=200&auto=format&fit=crop',
-          ),
-        ),
-        const SizedBox(height: 16),
-        InkWell(
-          onTap: () {
-            context.push('/article-detail');
-          },
-          child: const EducationArticleCard(
-            category: 'PENCEGAHAN',
-            title: 'Cara Mencegah Penularan TBC pada Anggota...',
-            isRead: false,
-            imageUrl: 'https://images.unsplash.com/photo-1583324113626-70df0f4deaab?q=80&w=200&auto=format&fit=crop',
-          ),
-        ),
-      ],
+    if (_errorMessage != null && _articles.isEmpty) {
+      return Center(child: Text(_errorMessage!));
+    }
+
+    if (_isLoading && _articles.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_articles.isEmpty) {
+      return const Center(child: Text('Belum ada artikel'));
+    }
+
+    final filteredArticles = _articles.where((article) {
+      if (selectedCategory == 'Semua') {
+        return _matchesSearch(article);
+      }
+
+      final matchesCategory =
+          article.category.toLowerCase() == selectedCategory.toLowerCase();
+
+      return matchesCategory && _matchesSearch(article);
+    }).toList();
+
+    if (filteredArticles.isEmpty) {
+      return const Center(child: Text('Kategori belum tersedia'));
+    }
+
+    return RefreshIndicator(
+      onRefresh: _refreshData,
+      child: ListView.separated(
+        controller: _scrollController,
+        padding: const EdgeInsets.all(20),
+        itemCount: filteredArticles.length + (_hasMore ? 1 : 0),
+        separatorBuilder: (context, index) => const SizedBox(height: 16),
+        itemBuilder: (context, index) {
+          if (index >= filteredArticles.length) {
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          final article = filteredArticles[index];
+          final progress = _progressByArticleId[article.id] ?? 0;
+          final coverUrl = article.coverUrl ?? '';
+
+          return InkWell(
+            onTap: () async {
+              await context.push('/article-detail/${article.id}');
+              await _refreshData();
+            },
+            child: EducationArticleCard(
+              category: article.category.toUpperCase(),
+              title: article.title,
+              isRead: progress >= 1,
+              imageUrl: coverUrl,
+            ),
+          );
+        },
+      ),
     );
+  }
+
+  bool _matchesSearch(Article article) {
+    if (_searchQuery.isEmpty) {
+      return true;
+    }
+
+    final query = _searchQuery.toLowerCase();
+
+    return article.title.toLowerCase().contains(query) ||
+        article.content.toLowerCase().contains(query) ||
+        article.category.toLowerCase().contains(query);
   }
 
   Widget _buildCenterFAB() {
@@ -224,7 +356,11 @@ class _EducationPageState extends State<EducationPage> {
         backgroundColor: AppColors.primaryGreen,
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
-        child: const Icon(Icons.smart_toy_outlined, color: Colors.white, size: 32),
+        child: const Icon(
+          Icons.smart_toy_outlined,
+          color: Colors.white,
+          size: 32,
+        ),
       ),
     );
   }
@@ -238,37 +374,84 @@ class _EducationPageState extends State<EducationPage> {
       child: SizedBox(
         height: 65,
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildNavItem(Icons.home_outlined, 'Home', false, () => context.go('/dashboard')),
-            _buildNavItem(Icons.map_outlined, 'Maps', false, () {}),
-            const SizedBox(width: 40),
-            _buildNavItem(Icons.menu_book, 'Education', true, () {}),
-            _buildNavItem(Icons.person_outline, 'Profile', false, () => context.go('/profile')),
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavItem(
+                    Icons.home_outlined,
+                    'Home',
+                    false,
+                    () => context.go('/dashboard'),
+                  ),
+                  _buildNavItem(
+                    Icons.map_outlined,
+                    'Maps',
+                    false,
+                    () => context.go('/maps'),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 72),
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavItem(Icons.menu_book, 'Education', true, () {}),
+                  _buildNavItem(
+                    Icons.person_outline,
+                    'Profile',
+                    false,
+                    () => context.go('/profile'),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, bool isActive, VoidCallback onTap) {
+  Widget _buildNavItem(
+    IconData icon,
+    String label,
+    bool isActive,
+    VoidCallback onTap,
+  ) {
     return InkWell(
       onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: isActive ? AppColors.primaryGreen : AppColors.grayIcon),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          // Jika aktif, beri background hijau pudar seperti di desain UI
+          color: isActive
+              ? AppColors.primaryGreen.withValues(alpha: 0.1)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
               color: isActive ? AppColors.primaryGreen : AppColors.grayIcon,
-              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
             ),
-          ),
-        ],
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                color: isActive ? AppColors.primaryGreen : AppColors.grayIcon,
+                fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

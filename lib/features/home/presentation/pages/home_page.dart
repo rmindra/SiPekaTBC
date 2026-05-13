@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sipekatbc/core/constants/app_colors.dart';
 import 'package:sipekatbc/core/session/user_session.dart';
+import 'package:sipekatbc/features/education/data/article_repository.dart';
+import 'package:sipekatbc/features/education/data/models/article_model.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
+
+  static final ArticleRepository _articleRepository = ArticleRepository();
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +26,7 @@ class HomePage extends StatelessWidget {
             const SizedBox(height: 24),
             _buildMenuGrid(),
             const SizedBox(height: 32),
-            _buildEducationSection(),
+            _buildEducationSection(context),
             const SizedBox(height: 20),
           ],
         ),
@@ -190,7 +194,7 @@ class HomePage extends StatelessWidget {
   }
 
   // --- EDUCATION SECTION ---
-  Widget _buildEducationSection() {
+  Widget _buildEducationSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -206,7 +210,7 @@ class HomePage extends StatelessWidget {
               ),
             ),
             TextButton(
-              onPressed: () {},
+              onPressed: () => context.go('/education'),
               child: const Text(
                 'Lihat Semua',
                 style: TextStyle(
@@ -220,34 +224,77 @@ class HomePage extends StatelessWidget {
         const SizedBox(height: 12),
         SizedBox(
           height: 280,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            clipBehavior: Clip.none,
-            children: [
-              _buildEduCard(
-                imageUrl:
-                    'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?q=80&w=500&auto=format&fit=crop',
-                title: 'Memahami Gejala Awal TBC dan Kapan Harus ke Dokter',
-                desc:
-                    'Kenali tanda-tanda awal tuberkulosis agar bisa mendapatkan penanganan lebih cepat',
-                time: '3 menit baca',
-                isNew: true,
-              ),
-              const SizedBox(width: 16),
-              _buildEduCard(
-                imageUrl:
-                    'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=500&auto=format&fit=crop',
-                title: 'Langkah Tepat Mencegah Penularan TBC di Rumah',
-                desc:
-                    'Praktik kebersihan dan sirkulasi udara untuk melindungi keluarga tercinta',
-                time: '5 menit baca',
-                isNew: false,
-              ),
-            ],
+          child: FutureBuilder<List<Article>>(
+            future: _articleRepository.fetchArticles(limit: 5),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState != ConnectionState.done) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              if (snapshot.hasError) {
+                return const Center(child: Text('Gagal memuat artikel'));
+              }
+
+              final articles = snapshot.data ?? [];
+
+              if (articles.isEmpty) {
+                return const Center(child: Text('Belum ada artikel'));
+              }
+
+              return ListView.separated(
+                scrollDirection: Axis.horizontal,
+                clipBehavior: Clip.none,
+                itemCount: articles.length,
+                separatorBuilder: (context, index) => const SizedBox(width: 16),
+                itemBuilder: (context, index) {
+                  final article = articles[index];
+                  final coverUrl = article.coverUrl ?? '';
+
+                  return InkWell(
+                    onTap: () => context.push('/article-detail/${article.id}'),
+                    child: _buildEduCard(
+                      imageUrl: coverUrl,
+                      title: article.title,
+                      desc: _buildExcerpt(article.content),
+                      time: _estimateReadTime(article.content),
+                      isNew: index == 0,
+                    ),
+                  );
+                },
+              );
+            },
           ),
         ),
       ],
     );
+  }
+
+  String _buildExcerpt(String content) {
+    final normalized = content.replaceAll(RegExp(r'\s+'), ' ').trim();
+
+    if (normalized.isEmpty) {
+      return 'Belum ada ringkasan artikel.';
+    }
+
+    if (normalized.length <= 90) {
+      return normalized;
+    }
+
+    return '${normalized.substring(0, 87)}...';
+  }
+
+  String _estimateReadTime(String content) {
+    final normalized = content.replaceAll(RegExp(r'\s+'), ' ').trim();
+
+    if (normalized.isEmpty) {
+      return '1 menit baca';
+    }
+
+    final wordCount = normalized.split(' ').length;
+    final minutes = (wordCount / 200).ceil();
+    final displayMinutes = minutes < 1 ? 1 : minutes;
+
+    return '$displayMinutes menit baca';
   }
 
   Widget _buildEduCard({
@@ -398,37 +445,84 @@ class HomePage extends StatelessWidget {
       child: SizedBox(
         height: 65,
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildNavItem(Icons.home_outlined, 'Home', true, () {}),
-            _buildNavItem(Icons.map_outlined, 'Maps', false, () {}),
-            const SizedBox(width: 40),
-            _buildNavItem(Icons.menu_book, 'Education', false, () => context.go('/education')),
-            _buildNavItem(Icons.person_outline, 'Profile', false, () => context.go('/profile')),
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavItem(Icons.home_outlined, 'Home', true, () {}),
+                  _buildNavItem(
+                    Icons.map_outlined,
+                    'Maps',
+                    false,
+                    () => context.go('/maps'),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 72),
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavItem(
+                    Icons.menu_book,
+                    'Education',
+                    false,
+                    () => context.go('/education'),
+                  ),
+                  _buildNavItem(
+                    Icons.person_outline,
+                    'Profile',
+                    false,
+                    () => context.go('/profile'),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, bool isActive, VoidCallback onTap) {
+  Widget _buildNavItem(
+    IconData icon,
+    String label,
+    bool isActive,
+    VoidCallback onTap,
+  ) {
     return InkWell(
       onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: isActive ? AppColors.primaryGreen : AppColors.grayIcon),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          // Jika aktif, beri background hijau pudar seperti di desain UI
+          color: isActive
+              ? AppColors.primaryGreen.withValues(alpha: 0.1)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
               color: isActive ? AppColors.primaryGreen : AppColors.grayIcon,
-              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
             ),
-          ),
-        ],
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                color: isActive ? AppColors.primaryGreen : AppColors.grayIcon,
+                fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

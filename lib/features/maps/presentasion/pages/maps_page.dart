@@ -75,11 +75,11 @@ class MapsPage extends StatelessWidget {
             child: ClipOval(
               child: UserSession.currentUser?.avatarUrl != null
                   ? Image.network(
-                UserSession.currentUser!.avatarUrl!,
-                fit: BoxFit.cover,
-                width: 36,
-                height: 36,
-              )
+                      UserSession.currentUser!.avatarUrl!,
+                      fit: BoxFit.cover,
+                      width: 36,
+                      height: 36,
+                    )
                   : const Icon(Icons.person, color: AppColors.grayIcon),
             ),
           ),
@@ -112,7 +112,9 @@ class MapsPage extends StatelessWidget {
             width: 260,
             height: 260,
             decoration: BoxDecoration(
-              color: const Color(0xFF26B6A5), // Warna Hijau Tosca terang sesuai UI
+              color: const Color(
+                0xFF26B6A5,
+              ), // Warna Hijau Tosca terang sesuai UI
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
@@ -211,7 +213,8 @@ class MapsPage extends StatelessWidget {
   }
 
   // --- REUSABLE COMPONENTS BOTTOM NAV & FAB ---
-  Widget _buildCenterFAB(BuildContext context) { // <-- Tambahan BuildContext
+  Widget _buildCenterFAB(BuildContext context) {
+    // <-- Tambahan BuildContext
     return Container(
       margin: const EdgeInsets.only(top: 30),
       height: 65,
@@ -223,7 +226,11 @@ class MapsPage extends StatelessWidget {
         backgroundColor: AppColors.primaryGreen,
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
-        child: const Icon(Icons.smart_toy_outlined, color: Colors.white, size: 32),
+        child: const Icon(
+          Icons.smart_toy_outlined,
+          color: Colors.white,
+          size: 32,
+        ),
       ),
     );
   }
@@ -237,16 +244,41 @@ class MapsPage extends StatelessWidget {
       child: SizedBox(
         height: 65,
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildNavItem(Icons.home_outlined, 'Home', false, () => context.go('/dashboard')),
-
-            // --- MAPS AKTIF (TRUE) ---
-            _buildNavItem(Icons.map, 'Maps', true, () => context.go('/maps')),
-
-            const SizedBox(width: 40),
-            _buildNavItem(Icons.menu_book, 'Education', false, () => context.go('/education')),
-            _buildNavItem(Icons.person_outline, 'Profile', false, () => context.go('/profile')),
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavItem(
+                    Icons.home_outlined,
+                    'Home',
+                    false,
+                    () => context.go('/dashboard'),
+                  ),
+                  _buildNavItem(Icons.map_outlined, 'Maps', true, () {}),
+                ],
+              ),
+            ),
+            const SizedBox(width: 72),
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavItem(
+                    Icons.menu_book,
+                    'Education',
+                    false,
+                    () => context.go('/education'),
+                  ),
+                  _buildNavItem(
+                    Icons.person_outline,
+                    'Profile',
+                    false,
+                    () => context.go('/profile'),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -254,7 +286,12 @@ class MapsPage extends StatelessWidget {
   }
 
   // Navbar item logic untuk menampilkan warna hijau pill saat aktif
-  Widget _buildNavItem(IconData icon, String label, bool isActive, VoidCallback onTap) {
+  Widget _buildNavItem(
+    IconData icon,
+    String label,
+    bool isActive,
+    VoidCallback onTap,
+  ) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
@@ -262,14 +299,19 @@ class MapsPage extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           // Jika aktif, beri background hijau pudar seperti di desain UI
-          color: isActive ? AppColors.primaryGreen.withValues(alpha: 0.1) : Colors.transparent,
+          color: isActive
+              ? AppColors.primaryGreen.withValues(alpha: 0.1)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: isActive ? AppColors.primaryGreen : AppColors.grayIcon),
+            Icon(
+              icon,
+              color: isActive ? AppColors.primaryGreen : AppColors.grayIcon,
+            ),
             const SizedBox(height: 4),
             Text(
               label,

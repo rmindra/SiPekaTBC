@@ -336,37 +336,84 @@ class _ProfilePageState extends State<ProfilePage> {
       child: SizedBox(
         height: 65,
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildNavItem(Icons.home_outlined, 'Home', false, () => context.go('/dashboard')),
-            _buildNavItem(Icons.map_outlined, 'Maps', false, () {}),
-            const SizedBox(width: 40),
-            _buildNavItem(Icons.menu_book, 'Education', false, () => context.go('/education')),
-            _buildNavItem(Icons.person_outline, 'Profile', true, () {}),
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavItem(
+                    Icons.home_outlined,
+                    'Home',
+                    false,
+                    () => context.go('/dashboard'),
+                  ),
+                  _buildNavItem(
+                    Icons.map_outlined,
+                    'Maps',
+                    false,
+                    () => context.go('/maps'),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 72),
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavItem(
+                    Icons.menu_book,
+                    'Education',
+                    false,
+                    () => context.go('/education'),
+                  ),
+                  _buildNavItem(Icons.person_outline, 'Profile', true, () {}),
+                ],
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, bool isActive, VoidCallback onTap) {
+  Widget _buildNavItem(
+    IconData icon,
+    String label,
+    bool isActive,
+    VoidCallback onTap,
+  ) {
     return InkWell(
       onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: isActive ? AppColors.primaryGreen : AppColors.grayIcon),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          // Jika aktif, beri background hijau pudar seperti di desain UI
+          color: isActive
+              ? AppColors.primaryGreen.withValues(alpha: 0.1)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
               color: isActive ? AppColors.primaryGreen : AppColors.grayIcon,
-              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
             ),
-          ),
-        ],
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                color: isActive ? AppColors.primaryGreen : AppColors.grayIcon,
+                fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
